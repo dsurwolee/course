@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+// import App from './App';
 
+import { BrowserRouter as Router, useNavigate, Navigate, Route, Routes } from "react-router-dom";
 
 import { initializeApp } from "firebase/app";
 import { GoogleAuthProvider, getAuth, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from "firebase/auth";
 import { getFirestore, query, getDocs, collection, where, addDoc} from "firebase/firestore";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 // Import the functions you need from the SDKs you need
 // import { initializeApp } from "firebase/app";
@@ -54,5 +56,80 @@ const signInWithGoogle = async () => {
     }
   };
 
-root.render(<button onClick={signInWithGoogle}>Login with Google</button>)
-// root.render(<App />)
+const logout = () => {
+    signOut(auth);
+}
+
+function Login() {
+
+    const [user, loading, error] = useAuthState(auth);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (loading) {
+            return;
+        }
+        if (user) navigate("/course");
+    }, [user, loading]);
+
+    // if (user) Navigate("/course")
+
+    console.log('user', user)
+
+    return (
+        <div>
+            <button onClick={signInWithGoogle}>Login with Google</button>        
+        </div>
+    )
+}
+
+function Course() {
+
+    const [user, loading, error] = useAuthState(auth);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (loading) return;
+        if (!user) return navigate("/");
+    })
+
+    return (        
+
+        <div>
+            <div>
+                Course Accessed!
+            </div>
+            <button onClick={logout}>Logout</button>
+        </div>        
+    )
+}
+
+
+function App() {
+
+    // useEffect(() => {
+    //     if (loading) {
+    //         return;
+    //     }
+    //     if (user) Navigate("/course");
+    // }, [user, loading]);
+
+    // const [user, loading, error] = useAuthState(auth);
+    // console.log('user', user)
+
+    
+    return (        
+
+        <div>
+            <div>DataInterview.com</div>
+            <Router>
+                <Routes>
+                    <Route exact path="/" element={<Login />} />
+                    <Route exact path="/course" element={<Course />} />
+                </Routes>
+            </Router>
+        </div>              
+    );
+}
+
+root.render(<App />)
